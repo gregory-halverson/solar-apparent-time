@@ -2,8 +2,8 @@
 requires = ["setuptools>=60", "setuptools-scm>=8.0", "wheel"]
 
 [project]
-name = "solar_apparent_time"
-version = "1.3.1"
+name = "solar-apparent-time"
+version = "1.3.2"
 description = "methods to translate Python datetime between solar apparent time and Coordinate Universal Time (UTC)"
 readme = "README.md"
 authors = [
@@ -24,4 +24,4 @@ requires-python = ">=3.10"
 solar_apparent_time = ["*.txt"]
 
 [project.urls]
-"Homepage" = "https://github.com/JPL-Evapotranspiration-Algorithms/solar_apparent_time"
+"Homepage" = "https://github.com/JPL-Evapotranspiration-Algorithms/solar-apparent-time"
