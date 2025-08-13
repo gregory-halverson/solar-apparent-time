@@ -1,6 +1,8 @@
 
 from typing import Union
 from datetime import datetime, timedelta
+
+from geopandas import GeoSeries
 import numpy as np
 import pandas as pd
 import rasters as rt
@@ -146,17 +148,27 @@ def calculate_solar_day_of_year(
     """
     times = _parse_time(time_UTC)
 
-    if geometry is not None:
+    # If latitude is not provided, try to extract from geometry
+    if lat is None and isinstance(geometry, SpatialGeometry):
+        lat = geometry.lat
+    elif lat is None and isinstance(geometry, GeoSeries):
+        lat = geometry.y
+    elif lat is None:
+        raise ValueError("no latitude provided")
+
+    if lon is None and isinstance(geometry, SpatialGeometry):
         lon = geometry.lon
-    elif lon is not None:
-        lon = np.asarray(lon)
-    else:
-        raise ValueError('Must provide either spatial or lon.')
-    
+    elif lon is None and isinstance(geometry, GeoSeries):
+        lon = geometry.x
+    elif lon is None:
+        raise ValueError("no longitude provided")
+
     # Broadcast times and lons
     times_b, lons_b = _broadcast_time_and_space(times, lon)
-    # Calculate DOY_UTC
-    doy_UTC = np.array([t.timetuple().tm_yday for t in times_b.flat]).reshape(times_b.shape)
+    # Vectorized conversion to pandas datetime and dayofyear extraction
+    times_b_flat = times_b.flatten()
+    times_b_dt = pd.to_datetime(times_b_flat)
+    doy_UTC = times_b_dt.dayofyear.values.reshape(times_b.shape)
     
     hour_UTC = (
         times_b.astype('datetime64[h]').astype(int) % 24
