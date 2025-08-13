@@ -163,13 +163,21 @@ def calculate_solar_day_of_year(
     elif lon is None:
         raise ValueError("no longitude provided")
 
-    # Broadcast times and lons
-    times_b, lons_b = _broadcast_time_and_space(times, lon)
+    # Handle 1D time and lon inputs of the same length: pair element-wise
+    times = np.asarray(times)
+    lon = np.asarray(lon)
+    if times.ndim == 1 and lon.ndim == 1 and times.shape == lon.shape:
+        times_b = times
+        lons_b = lon
+    else:
+        # Broadcast to 2D if not matching 1D
+        times_b, lons_b = _broadcast_time_and_space(times, lon)
+
     # Vectorized conversion to pandas datetime and dayofyear extraction
     times_b_flat = times_b.flatten()
     times_b_dt = pd.to_datetime(times_b_flat)
     doy_UTC = times_b_dt.dayofyear.values.reshape(times_b.shape)
-    
+
     hour_UTC = (
         times_b.astype('datetime64[h]').astype(int) % 24
         + (times_b.astype('datetime64[m]').astype(int) % 60) / 60
